@@ -1,0 +1,21 @@
+{
+  "name": "coolbg",
+  "version": "1.0.0",
+  "description": "Cool BG - Background effects application",
+  "main": "index.html",
+  "scripts": {
+    "build": "echo 'No build step required - static site'",
+    "dev": "npx serve .",
+    "lint": "echo 'No linter configured'"
+  },
+  "keywords": [
+    "background",
+    "effects",
+    "visual"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
+  }
+}
