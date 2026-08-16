@@ -108,19 +108,22 @@ export default function Header({ variant = "compact", onRandomizeAll }) {
     </div>
   );
 
+  // التعديل هنا: تحويل div إلى header للحفاظ على الـ SEO
   const stickyBar = (
-    <div className="sticky top-0 z-50 bg-[#0B0E14]/80 backdrop-blur-md border-b border-white/10">
+    <header className="sticky top-0 z-50 bg-[#0B0E14]/80 backdrop-blur-md border-b border-white/10">
       <div className="max-w-7xl mx-auto px-5 sm:px-8 py-4">{navBar}</div>
       {mobileMenu}
-    </div>
+    </header>
   );
 
+  // التعديل هنا: إرجاع stickyBar مباشرة بدون تغليفه بـ header إضافي
   if (variant !== "hero") {
-    return <header>{stickyBar}</header>;
+    return stickyBar;
   }
 
+  // التعديل هنا: استخدام <> </> (Fragment) لفصل القائمة العلوية عن قسم الهيرو
   return (
-    <header>
+    <>
       {stickyBar}
       <div className="relative overflow-hidden border-b border-white/10">
         <canvas ref={heroRef} className="absolute inset-0 w-full h-full opacity-90" />
@@ -137,6 +140,6 @@ export default function Header({ variant = "compact", onRandomizeAll }) {
           </div>
         </div>
       </div>
-    </header>
+    </>
   );
 }
