@@ -91,8 +91,9 @@ export default function Header({ variant = "compact", onRandomizeAll }) {
     </div>
   );
 
+  // تمت إضافة التأثير الزجاجي لقائمة الهاتف المحمول أيضاً
   const mobileMenu = menuOpen && (
-    <div className="sm:hidden border-t border-white/10 bg-[#0B0E14]/95">
+    <div className="sm:hidden border-t border-white/10 bg-[#0B0E14]/70 backdrop-blur-lg">
       <nav className="max-w-7xl mx-auto px-5 py-4 flex flex-col gap-1 text-sm text-white/70">
         {LINKS.map((l) => (
           <Link
@@ -108,20 +109,20 @@ export default function Header({ variant = "compact", onRandomizeAll }) {
     </div>
   );
 
-  // التعديل هنا: تحويل div إلى header للحفاظ على الـ SEO
+  // تطبيق الـ Sticky مع التأثير الزجاجي
   const stickyBar = (
-    <header className="sticky top-0 z-50 bg-[#0B0E14]/80 backdrop-blur-md border-b border-white/10">
+    <header className="sticky top-0 z-50 bg-[#0B0E14]/70 backdrop-blur-lg border-b border-white/10">
       <div className="max-w-7xl mx-auto px-5 sm:px-8 py-4">{navBar}</div>
       {mobileMenu}
     </header>
   );
 
-  // التعديل هنا: إرجاع stickyBar مباشرة بدون تغليفه بـ header إضافي
+  // إرجاع القائمة العلوية الثابتة مباشرة
   if (variant !== "hero") {
     return stickyBar;
   }
 
-  // التعديل هنا: استخدام <> </> (Fragment) لفصل القائمة العلوية عن قسم الهيرو
+  // فصل القائمة عن الهيرو لكي تعمل خاصية الـ Sticky بشكل ممتاز عند التمرير
   return (
     <>
       {stickyBar}
