@@ -8,18 +8,16 @@ export default function Document() {
         <link rel="icon" href="/favicon.svg"/>
         <meta name="theme-color" content="#0B0E14"/>
 
-        {/* Google Analytics */}
-        <script
-          async
-          src="https://www.googletagmanager.com/gtag/js?id=G-QJ4Y8EZWDQ"
-        />
+        {/* Google tag (gtag.js) */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-3FD5DJ3RQ6"></script>
         <script
           dangerouslySetInnerHTML={{
             __html: `
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
-              gtag('config', 'G-QJ4Y8EZWDQ');
+
+              gtag('config', 'G-3FD5DJ3RQ6');
             `,
           }}
         />
