@@ -1,8 +1,21 @@
 import { useState } from "react";
 import { X, Shuffle, Download, Link2, Code2, Check } from "lucide-react";
 import { Surface } from "./Surfaces";
-import { randomParams, PATTERN_SHAPES } from "../lib/generators";
+import { randomParams, PATTERN_SHAPES, VECTOR_TYPES } from "../lib/generators";
 import { SIZE_PRESETS, exportSVG } from "../lib/exportUtils";
+
+// which sliders/controls apply to each type — kept explicit so we never show
+// a control that has no visual effect for the selected type
+const CONTROLS_BY_TYPE = {
+  gradient: ["angle"],
+  pattern: ["density", "scale", "noise", "shape"],
+  mesh: ["density", "scale", "noise"],
+  animated: ["density", "scale", "noise"],
+  palette: ["density"],
+  duotone: ["angle"],
+  stripes: ["angle", "scale"],
+  grain: ["density", "noise"],
+};
 
 function Slider({ label, value, min, max, step, onChange, suffix = "" }) {
   return (
@@ -68,23 +81,34 @@ export default function EditorModal({ card, onClose, onChange, onDownload, onSha
           </div>
 
           <div className="space-y-4">
-            {card.type === "gradient" && (
-              <Slider label="Angle" value={card.angle} min={0} max={360} step={1} suffix="°" onChange={(v) => set({ angle: v })} />
-            )}
-            {(card.type === "pattern" || card.type === "mesh" || card.type === "animated") && (
-              <Slider label="Density" value={card.density} min={2} max={30} step={1} onChange={(v) => set({ density: v })} />
-            )}
-            <Slider label="Scale" value={card.scale} min={0.3} max={2.5} step={0.05} onChange={(v) => set({ scale: v })} />
-            <Slider label="Noise overlay" value={card.noise} min={0} max={1} step={0.02} onChange={(v) => set({ noise: v })} />
-            {card.type === "pattern" && (
-              <label className="block">
-                <div className="text-xs text-white/60 mb-1.5 font-mono">Shape</div>
-                <select value={card.shape} onChange={(e) => set({ shape: e.target.value })}
-                  className="w-full bg-white/5 border border-white/15 rounded-lg px-2.5 py-2 text-sm text-white outline-none focus:border-violet-400">
-                  {PATTERN_SHAPES.map((s) => <option key={s} value={s} className="bg-[#12151C]">{s}</option>)}
-                </select>
-              </label>
-            )}
+            {(() => {
+              const controls = CONTROLS_BY_TYPE[card.type] || [];
+              return (
+                <>
+                  {controls.includes("angle") && (
+                    <Slider label="Angle" value={card.angle} min={0} max={360} step={1} suffix="°" onChange={(v) => set({ angle: v })} />
+                  )}
+                  {controls.includes("density") && (
+                    <Slider label="Density" value={card.density} min={2} max={30} step={1} onChange={(v) => set({ density: v })} />
+                  )}
+                  {controls.includes("scale") && (
+                    <Slider label="Scale" value={card.scale} min={0.3} max={2.5} step={0.05} onChange={(v) => set({ scale: v })} />
+                  )}
+                  {controls.includes("noise") && (
+                    <Slider label="Noise overlay" value={card.noise} min={0} max={1} step={0.02} onChange={(v) => set({ noise: v })} />
+                  )}
+                  {controls.includes("shape") && (
+                    <label className="block">
+                      <div className="text-xs text-white/60 mb-1.5 font-mono">Shape</div>
+                      <select value={card.shape} onChange={(e) => set({ shape: e.target.value })}
+                        className="w-full bg-white/5 border border-white/15 rounded-lg px-2.5 py-2 text-sm text-white outline-none focus:border-violet-400">
+                        {PATTERN_SHAPES.map((s) => <option key={s} value={s} className="bg-[#12151C]">{s}</option>)}
+                      </select>
+                    </label>
+                  )}
+                </>
+              );
+            })()}
           </div>
 
           <button
@@ -107,7 +131,7 @@ export default function EditorModal({ card, onClose, onChange, onDownload, onSha
                 <Download size={14} /> PNG
               </button>
             </div>
-            {card.type === "pattern" && (
+            {VECTOR_TYPES.includes(card.type) && (
               <button onClick={() => exportSVG(card)}
                 className="w-full flex items-center justify-center gap-1.5 rounded-lg border border-white/15 hover:bg-white/10 text-white text-xs font-medium py-2 transition-colors">
                 <Download size={14} /> Download raw SVG

@@ -69,6 +69,16 @@ export default function Header({ variant = "compact", onRandomizeAll }) {
             <Shuffle size={15} /> Randomize All
           </button>
         )}
+        {onRandomizeAll && (
+          <button
+            onClick={onRandomizeAll}
+            aria-label="Randomize all backgrounds"
+            title="Randomize All"
+            className="sm:hidden flex items-center justify-center w-9 h-9 rounded-full bg-white text-black hover:bg-white/90 transition-colors shadow-lg"
+          >
+            <Shuffle size={16} />
+          </button>
+        )}
         <button
           onClick={() => setMenuOpen((v) => !v)}
           aria-label={menuOpen ? "Close menu" : "Open menu"}
@@ -94,14 +104,6 @@ export default function Header({ variant = "compact", onRandomizeAll }) {
             {l.label}
           </Link>
         ))}
-        {onRandomizeAll && (
-          <button
-            onClick={() => { onRandomizeAll(); closeMenu(); }}
-            className="mt-3 flex items-center justify-center gap-2 rounded-full bg-white text-black text-sm font-semibold px-4 py-2.5 hover:bg-white/90 transition-colors shadow-lg"
-          >
-            <Shuffle size={15} /> Randomize All
-          </button>
-        )}
       </nav>
     </div>
   );

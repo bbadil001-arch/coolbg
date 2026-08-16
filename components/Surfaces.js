@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useRef } from "react";
-import { gradientCSSString, buildPatternSVG, drawMesh } from "../lib/generators";
+import { gradientCSSString, buildVectorSVG, drawMesh } from "../lib/generators";
 
 export function GradientSurface({ p, className = "" }) {
   return <div className={className} style={{ background: gradientCSSString(p) }} />;
 }
 
-export function PatternSurface({ p, className = "" }) {
+export function VectorSurface({ p, className = "" }) {
   const svg = useMemo(
-    () => buildPatternSVG(p, 400, 300),
-    [p.seed, p.type, p.shape, p.density, p.scale, p.c1, p.c2, p.c3]
+    () => buildVectorSVG(p.type, p, 400, 300),
+    [p.seed, p.type, p.shape, p.density, p.scale, p.noise, p.angle, p.c1, p.c2, p.c3]
   );
   return (
     <div
@@ -47,7 +47,7 @@ export function CanvasSurface({ p, className = "", animated = false }) {
 
 export function Surface({ p, className }) {
   if (p.type === "gradient") return <GradientSurface p={p} className={className} />;
-  if (p.type === "pattern") return <PatternSurface p={p} className={className} />;
   if (p.type === "mesh") return <CanvasSurface p={p} className={className} animated={false} />;
-  return <CanvasSurface p={p} className={className} animated={true} />;
+  if (p.type === "animated") return <CanvasSurface p={p} className={className} animated={true} />;
+  return <VectorSurface p={p} className={className} />;
 }

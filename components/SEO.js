@@ -2,7 +2,7 @@ import Head from "next/head";
 
 const SITE_URL = "https://www.coolbg.com";
 const DEFAULT_DESCRIPTION =
-  "Generate, customize, and download unlimited procedural backgrounds — gradients, SVG patterns, and animated mesh canvases. Free, no signup, export as PNG or SVG.";
+  "Generate, customize, and download unlimited procedural backgrounds — gradients, SVG patterns, color palettes, duotones, stripes, grain textures, and animated mesh canvases. Free, no signup, export as PNG or SVG.";
 const DEFAULT_TITLE = "CoolBG.com — Free Procedural Background Generator (Gradients, SVG, Mesh)";
 
 // Central <Head> component so every page ships real, server-rendered meta
