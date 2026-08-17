@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { Shuffle, Menu, X } from "lucide-react";
+import { Shuffle, Menu, X, Sparkles } from "lucide-react";
 import { LogoMark, Wordmark } from "./LogoMark";
 import { drawMesh, randomParams } from "../lib/generators";
 
@@ -13,7 +13,7 @@ const LINKS = [
 // Site-wide header. The top nav bar is sticky on every page (mobile + desktop).
 // On the home page a separate animated hero renders directly below the sticky
 // bar; on inner pages (about/blog/etc.) the sticky bar is the whole header.
-export default function Header({ variant = "compact", onRandomizeAll }) {
+export default function Header({ variant = "compact", onRandomizeAll, onOpenAIWizard }) {
   const heroRef = useRef(null);
   const [heroParams] = useState(() => randomParams("animated", { noise: 0.08 }));
   const [menuOpen, setMenuOpen] = useState(false);
@@ -53,14 +53,32 @@ export default function Header({ variant = "compact", onRandomizeAll }) {
         <LogoMark size={30} />
         <Wordmark className="text-lg" />
       </Link>
-      <div className="flex items-center gap-3">
-        <nav className="hidden sm:flex items-center gap-5 text-sm text-white/70">
+      <div className="flex items-center gap-2 sm:gap-3">
+        <nav className="hidden sm:flex items-center gap-5 text-sm text-white/70 mr-1">
           {LINKS.map((l) => (
             <Link key={l.href} href={l.href} className="hover:text-white transition-colors">
               {l.label}
             </Link>
           ))}
         </nav>
+        {onOpenAIWizard && (
+          <button
+            onClick={onOpenAIWizard}
+            className="hidden sm:flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white text-sm font-semibold px-4 py-2 hover:opacity-90 transition-opacity shadow-lg"
+          >
+            <Sparkles size={15} /> Make with AI
+          </button>
+        )}
+        {onOpenAIWizard && (
+          <button
+            onClick={onOpenAIWizard}
+            aria-label="Make a background with AI"
+            title="Make with AI"
+            className="sm:hidden flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white hover:opacity-90 transition-opacity shadow-lg"
+          >
+            <Sparkles size={16} />
+          </button>
+        )}
         {onRandomizeAll && (
           <button
             onClick={onRandomizeAll}

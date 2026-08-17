@@ -6,7 +6,9 @@ import Footer from "../components/Footer";
 import Toast from "../components/Toast";
 import BackgroundCard from "../components/BackgroundCard";
 import EditorModal from "../components/EditorModal";
+import AIWizardModal from "../components/AIWizardModal";
 import { CATEGORIES, TYPE_BY_CATEGORY, makeCard, randomParams, cssForCard } from "../lib/generators";
+import { makeAICard } from "../lib/aiGenerate";
 import { encodeStateToHash, decodeHashToState } from "../lib/urlState";
 import { exportPNG } from "../lib/exportUtils";
 import { ARTICLES } from "../lib/articles";
@@ -27,6 +29,7 @@ export default function Home() {
   const [editingCard, setEditingCard] = useState(null);
   const [copiedId, setCopiedId] = useState(null);
   const [toast, setToast] = useState("");
+  const [aiWizardOpen, setAiWizardOpen] = useState(false);
 
   // generate the default gallery (24 cards spanning every category) on mount
   useEffect(() => {
@@ -57,14 +60,31 @@ export default function Home() {
     setBackgrounds((prev) => prev.map((c) => ({ ...c, ...randomParams(c.type, { type: c.type }) })));
   };
 
+  const handleAIGenerate = async (prompt) => {
+    const card = await makeAICard(prompt); // throws on failure — caught by the wizard itself
+    setBackgrounds((prev) => [card, ...prev]);
+    setCategory("All");
+    setAiWizardOpen(false);
+    setEditingCard(card);
+    showToast("✨ AI background generated");
+  };
+
   const handleEditorChange = (updated) => {
     setEditingCard(updated);
     setBackgrounds((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
   };
 
   const handleDownload = async (card, sizeKey = "Desktop 1080p") => {
-    await exportPNG(card, sizeKey);
-    showToast("PNG downloaded");
+    try {
+      await exportPNG(card, sizeKey);
+      showToast(card.type === "ai-image" ? "Image downloaded" : "PNG downloaded");
+    } catch (err) {
+      if (err?.code === "opened-fallback") {
+        showToast("Opened in a new tab — right-click to save");
+      } else {
+        showToast("Download failed — try again");
+      }
+    }
   };
 
   const handleShare = async (card) => {
@@ -96,7 +116,7 @@ export default function Home() {
     <div className="min-h-screen bg-[#0B0E14] text-[#F4F5F7]">
       <SEO title={DEFAULT_TITLE} description={DEFAULT_DESCRIPTION} path="/" jsonLd={JSON_LD} />
 
-      <Header variant="hero" onRandomizeAll={randomizeAll} />
+      <Header variant="hero" onRandomizeAll={randomizeAll} onOpenAIWizard={() => setAiWizardOpen(true)} />
 
       <div id="gallery" className="max-w-7xl mx-auto px-5 sm:px-8 pt-8">
         <nav className="flex flex-wrap gap-2">
@@ -179,6 +199,11 @@ export default function Home() {
         onShare={handleShare}
         onCopyCSS={handleCopyCSS}
         copied={editingCard && copiedId === editingCard.id}
+      />
+      <AIWizardModal
+        open={aiWizardOpen}
+        onClose={() => setAiWizardOpen(false)}
+        onGenerate={handleAIGenerate}
       />
       <Toast message={toast} />
     </div>

@@ -45,9 +45,19 @@ export function CanvasSurface({ p, className = "", animated = false }) {
   return <canvas ref={ref} width={400} height={300} className={className} />;
 }
 
+export function AIImageSurface({ p, className = "" }) {
+  return (
+    <div
+      className={className}
+      style={{ backgroundColor: "#12151C", backgroundImage: `url("${p.url}")`, backgroundSize: "cover", backgroundPosition: "center" }}
+    />
+  );
+}
+
 export function Surface({ p, className }) {
   if (p.type === "gradient") return <GradientSurface p={p} className={className} />;
   if (p.type === "mesh") return <CanvasSurface p={p} className={className} animated={false} />;
   if (p.type === "animated") return <CanvasSurface p={p} className={className} animated={true} />;
+  if (p.type === "ai-image") return <AIImageSurface p={p} className={className} />;
   return <VectorSurface p={p} className={className} />;
 }

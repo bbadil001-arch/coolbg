@@ -1,8 +1,9 @@
-import { useState } from "react";
-import { X, Shuffle, Download, Link2, Code2, Check } from "lucide-react";
+import { useEffect, useState } from "react";
+import { X, Shuffle, Download, Link2, Code2, Check, Sparkles, Loader2 } from "lucide-react";
 import { Surface } from "./Surfaces";
 import { randomParams, PATTERN_SHAPES, VECTOR_TYPES } from "../lib/generators";
 import { SIZE_PRESETS, exportSVG } from "../lib/exportUtils";
+import { pollinationsUrl, preloadImage, AI_PREVIEW_SIZE } from "../lib/aiGenerate";
 
 // which sliders/controls apply to each type — kept explicit so we never show
 // a control that has no visual effect for the selected type
@@ -15,6 +16,7 @@ const CONTROLS_BY_TYPE = {
   duotone: ["angle"],
   stripes: ["angle", "scale"],
   grain: ["density", "noise"],
+  "ai-image": [],
 };
 
 function Slider({ label, value, min, max, step, onChange, suffix = "" }) {
@@ -51,8 +53,33 @@ export default function EditorModal({ card, onClose, onChange, onDownload, onSha
   // hooks must run every render regardless of `card`, so this state is
   // declared before the early return below
   const [sizeKey, setSizeKey] = useState("Desktop 1080p");
+  const [promptDraft, setPromptDraft] = useState("");
+  const [regenerating, setRegenerating] = useState(false);
+  const [genError, setGenError] = useState("");
+
+  useEffect(() => {
+    if (card?.type === "ai-image") setPromptDraft(card.prompt || "");
+    setGenError("");
+  }, [card?.id]);
+
   if (!card) return null;
   const set = (patch) => onChange({ ...card, ...patch });
+
+  const handleRegenerate = async () => {
+    if (!promptDraft.trim() || regenerating) return;
+    setRegenerating(true);
+    setGenError("");
+    try {
+      const seed = Math.floor(Math.random() * 1e9);
+      const url = pollinationsUrl(promptDraft, { ...AI_PREVIEW_SIZE, seed });
+      await preloadImage(url);
+      set({ prompt: promptDraft, seed, url });
+    } catch (err) {
+      setGenError(err.message || "Couldn't generate that image — try again.");
+    } finally {
+      setRegenerating(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 sm:p-6">
@@ -64,6 +91,13 @@ export default function EditorModal({ card, onClose, onChange, onDownload, onSha
 
         <div className="relative flex-1 min-h-[280px] md:min-h-0 bg-black/30">
           <Surface p={card} className="absolute inset-0 w-full h-full" />
+          {regenerating && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+              <div className="flex items-center gap-2 text-white/90 text-sm">
+                <Loader2 size={18} className="animate-spin" /> Generating…
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="w-full md:w-[340px] shrink-0 border-t md:border-t-0 md:border-l border-white/10 p-5 overflow-y-auto space-y-6">
@@ -74,11 +108,13 @@ export default function EditorModal({ card, onClose, onChange, onDownload, onSha
             </span>
           </div>
 
-          <div className="space-y-3">
-            <ColorField label="Primary" value={card.c1} onChange={(v) => set({ c1: v })} />
-            <ColorField label="Secondary" value={card.c2} onChange={(v) => set({ c2: v })} />
-            <ColorField label="Accent / BG" value={card.c3} onChange={(v) => set({ c3: v })} />
-          </div>
+          {card.type !== "ai-image" && (
+            <div className="space-y-3">
+              <ColorField label="Primary" value={card.c1} onChange={(v) => set({ c1: v })} />
+              <ColorField label="Secondary" value={card.c2} onChange={(v) => set({ c2: v })} />
+              <ColorField label="Accent / BG" value={card.c3} onChange={(v) => set({ c3: v })} />
+            </div>
+          )}
 
           <div className="space-y-4">
             {(() => {
@@ -111,12 +147,35 @@ export default function EditorModal({ card, onClose, onChange, onDownload, onSha
             })()}
           </div>
 
-          <button
-            onClick={() => set(randomParams(card.type, { type: card.type }))}
-            className="w-full flex items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 text-sm text-white py-2.5 transition-colors"
-          >
-            <Shuffle size={15} /> Randomize this theme
-          </button>
+          {card.type === "ai-image" ? (
+            <div className="space-y-2.5">
+              <label className="block">
+                <div className="text-xs text-white/60 mb-1.5 font-mono">Prompt</div>
+                <textarea
+                  value={promptDraft}
+                  onChange={(e) => setPromptDraft(e.target.value)}
+                  rows={4}
+                  className="w-full bg-white/5 border border-white/15 rounded-lg px-2.5 py-2 text-sm text-white outline-none focus:border-violet-400 resize-none"
+                />
+              </label>
+              {genError && <p className="text-xs text-red-400">{genError}</p>}
+              <button
+                onClick={handleRegenerate}
+                disabled={regenerating || !promptDraft.trim()}
+                className="w-full flex items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed text-sm text-white py-2.5 transition-colors"
+              >
+                {regenerating ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
+                {regenerating ? "Generating…" : promptDraft.trim() === card.prompt ? "New variation" : "Regenerate with this prompt"}
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => set(randomParams(card.type, { type: card.type }))}
+              className="w-full flex items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 text-sm text-white py-2.5 transition-colors"
+            >
+              <Shuffle size={15} /> Randomize this theme
+            </button>
+          )}
 
           <div className="h-px bg-white/10" />
 
